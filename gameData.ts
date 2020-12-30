@@ -41,7 +41,7 @@ export default class gameData extends cc.Component {
      * @param key 
      * @param value 
      */
-    private setItem(key: string, value: any) {
+    protected setItem(key: string, value: any) {
         let type = typeof value
         if (type == 'number') {
             let obj = { type: 'number', value: value }
@@ -72,7 +72,7 @@ export default class gameData extends cc.Component {
      * 抛出事件
      * @param key 
      */
-    private emit(key: string) {
+    protected emit(key: string) {
         let handles = this.allhandles[key]
         if (handles) {
             this.emitLock = true
