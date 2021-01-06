@@ -1,15 +1,26 @@
 /**
  * 状态上下文
  */
-export default abstract class Context {
+export interface Context {
     state: State<Context>
-    changeState(state: State<Context>) {
-        if (this.state) this.state.onExit()
-        this.state = state
-        if (this.state) {
-            this.state.context = this
-            this.state.onEnter()
+}
+
+export function changeState(context: Context, cls: { new(): State<Context> }, pars?: any) {
+    if (context.state) {
+        context.state.onExit()
+    }
+
+    context.state = new cls()
+
+    if (context.state) {
+        context.state.context = context
+        if (pars) {
+            for (const key in pars) {
+                const par = pars[key]
+                context.state[key] = par
+            }
         }
+        context.state.onEnter()
     }
 }
 
@@ -21,7 +32,7 @@ export interface State<T> {
     /** 进入状态 */
     onEnter(): void
     /** 更新状态 */
-    onUpdate(dt:number): void
+    onUpdate(dt: number): void
     /** 退出状态 */
     onExit(): void
 }
