@@ -1,5 +1,3 @@
-import Load from "../Script/View/Load"
-
 const { ccclass, property, menu } = cc._decorator
 
 @ccclass
@@ -53,9 +51,12 @@ export default class loadSprite extends cc.Component {
             }
             //检查是否在load中纪录的banndle
             let bundle_name = url.slice(0, index)
-            if (!Load.Bundles.includes(bundle_name)) {
+            if (!cc.assetManager.bundles.get(bundle_name)) {
                 throw Error('not find bundle ' + bundle_name)
             }
+            // if (!Load.Bundles.includes(bundle_name)) {
+            //     throw Error('not find bundle ' + bundle_name)
+            // }
             //检查bundle是否存在
             let bundle = cc.assetManager.getBundle(bundle_name)
             if (bundle == null) {
