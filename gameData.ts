@@ -1,87 +1,133 @@
-interface handle {
-    fun: Function,
-    the: cc.Component
+const { ccclass, property } = cc._decorator
+
+/**
+ * 玩家存储的数据
+ */
+export var gamedata: IGameData = null
+
+enum type {
+    number = 0,
+    string = 1,
+    boolean = 2,
+    object = 3
 }
 
-@cc._decorator.ccclass
-export default class gameData extends cc.Component {
+interface typeValue {
+    type: type
+    value: number | string | boolean | object
+}
+
+@ccclass
+export class IGameData extends cc.Component {
+
+    @property({ tooltip: '测试时生效' })
+    private clearData = true
+
+    @property
+    private GameName = 'test'
+
+    private localStorage: Storage = null
+
+    onLoad() {
+        this.localStorage = cc.sys.localStorage
+        if (gamedata) {
+            cc.error('不能同时存在2个GameData组件')
+        }
+        gamedata = this
+        //初始化所有数据
+        if (CC_DEBUG && this.clearData) {
+            //测试时清除数据
+        } else {
+            let array = Object.keys(new IGameData())
+            this.removeArray(array, '_openid')
+            this.removeArray(array, '_music')
+            this.removeArray(array, '_effect')
+            for (const key in this) {
+                if (Object.prototype.hasOwnProperty.call(this, key)) {
+                    if (!array.includes(key)) {
+                        let data = this.getItem(key)
+                        if (data !== null) {
+                            this[key] = data
+                        }
+                    }
+                }
+            }
+        }
+        //同步音乐音效
+        cc.audioEngine.setMusicVolume(this.music ? 1 : 0)
+        cc.audioEngine.setEffectsVolume(this.effect ? 1 : 0)
+    }
+
     /**
-     * 所有监听
+     * 从某个列表删除一个元素
      */
-    private allhandles: { [x: string]: { [x: string]: handle } } = {}
+    private removeArray<T>(array: Array<T>, item: T) {
+        let index = array.indexOf(item)
+        if (index > -1) {
+            array.splice(index, 1)
+        }
+    }
 
     /**
      * 从本地缓存中取出一个value
      * @param key value对应的key
      */
     private getItem(key: string) {
-        let str = cc.sys.localStorage.getItem(key)
-        if (!str) return null
-        let obj = JSON.parse(str)
-        if (obj) {
-            if (obj.type == 'number') {
-                return obj.value
-
-            } else if (obj.type == 'string') {
-                return obj.value
-
-            } else if (obj.type == 'boolean') {
-                return obj.value
-
-            } else {
-                return obj
-            }
-        } else {
+        key = this.GameName + '_' + key
+        let str = this.localStorage.getItem(key)
+        if (str === null || str === undefined || str === '') {
             return null
+        }
+        let obj = JSON.parse(str)
+        switch (obj.type) {
+            case type.number: return obj.value;
+            case type.string: return obj.value;
+            case type.boolean: return obj.value;
+            case type.object: return obj;
+            default: return obj;
         }
     }
 
+    private static VALUE_NUMBER: typeValue = { type: type.number, value: 0 }
+    private static VALUE_STRING: typeValue = { type: type.string, value: '' }
+    private static VALUE_BOOLEAN: typeValue = { type: type.boolean, value: true }
+    private static VALUE_OBJECT: typeValue = { type: type.object, value: null }
     /**
      * 给本地缓存中保存一个key-value
      * @param key 
      * @param value 
      */
-    protected setItem(key: string, value: any) {
-        let type = typeof value
-        if (type == 'number') {
-            let obj = { type: 'number', value: value }
-            let str = JSON.stringify(obj)
-            cc.sys.localStorage.setItem(key, str)
-
-        } else if (type == 'string') {
-            let obj = { type: 'string', value: value }
-            let str = JSON.stringify(obj)
-            cc.sys.localStorage.setItem(key, str)
-
-        } else if (type == 'boolean') {
-            let obj = { type: 'boolean', value: value }
-            let str = JSON.stringify(obj)
-            cc.sys.localStorage.setItem(key, str)
-
-        } else {
-            let str = JSON.stringify(value)
-            cc.sys.localStorage.setItem(key, str)
+    protected setItem(key: string, value: any, _type: type) {
+        let str = this.GameName + '_'
+        switch (_type) {
+            case type.number:
+                IGameData.VALUE_NUMBER.value = value
+                str = JSON.stringify(IGameData.VALUE_NUMBER)
+                break;
+            case type.string:
+                IGameData.VALUE_STRING.value = value
+                str = JSON.stringify(IGameData.VALUE_STRING)
+                break;
+            case type.boolean:
+                IGameData.VALUE_BOOLEAN.value = value
+                str = JSON.stringify(IGameData.VALUE_BOOLEAN)
+                break;
+            case type.object:
+                IGameData.VALUE_OBJECT.value = value
+                str = JSON.stringify(IGameData.VALUE_OBJECT)
+                break;
+            default:
+                throw Error('[error]undefined by type:' + typeof value)
         }
+        this.localStorage.setItem(key, str)
     }
 
-    /**
-     * 抛出事件锁定,防止抛出事件中途,监听列表发生变化
-     */
-    private emitLock = false
     /**
      * 抛出事件
      * @param key 
      */
     protected emit(key: string) {
-        let handles = this.allhandles[key]
-        if (handles) {
-            this.emitLock = true
-            for (const x in handles) {
-                const handle = handles[x]
-                handle.fun.call(handle.the)
-            }
-            this.emitLock = false
-        }
+        this.node.emit(key, this[key])
     }
 
     /**
@@ -92,19 +138,8 @@ export default class gameData extends cc.Component {
      * @param call 立刻回调 false
      */
     on(key: string, the: cc.Component, fun: Function, call = false) {
-        if (this.emitLock) {
-            throw Error('GameData.emitLock 正在抛出事件')
-        }
-        let handle = { the: the, fun: fun }
-        let handles = this.allhandles[key]
-        if (handles) {
-            handles[the.uuid] = handle
-        } else {
-            handles = {}
-            handles[the.uuid] = handle
-            this.allhandles[key] = handles
-        }
-        if (call) fun.call(the)
+        this.node.on(key, fun, the)
+        if (call) fun.call(the, this[key])
     }
 
     /**
@@ -113,67 +148,39 @@ export default class gameData extends cc.Component {
      * @param the 
      * @param fun 
      */
-    off(key: string, the: cc.Component) {
-        if (this.emitLock) {
-            throw Error('GameData.emitLock 正在抛出事件')
-        }
-        let handles = this.allhandles[key]
-        if (handles) {
-            let handle = handles[the.uuid]
-            if (handle) {
-                delete handles[the.uuid]
-            } else {
-                throw Error('GameData.off key:' + key)
-            }
-        } else {
-            throw Error('GameData.off key:' + key)
-        }
+    off(key: string, the: cc.Component, fun: Function) {
+        this.node.off(key, fun, the)
     }
 
-    onLoad() {
-        //初始化所有数据
-        for (const key in this) {
-            const s_ = key.slice(0, 2)
-            if (s_ == 's_') {
-                const name = key.slice(2)
-                let data = this.getItem(name)
-                if (data != null) {
-                    this[key] = data
-                }
-            }
-        }
-        //同步音乐音效
-        cc.audioEngine.setMusicVolume(this.music ? 1 : 0)
-        cc.audioEngine.setEffectsVolume(this.effect ? 1 : 0)
+
+
+    //-----------------默认属性-----------------↓
+    private _openid: string = null
+    /** openid */
+    get openid() { return this._openid }
+    set openid(value: string) {
+        this._openid = value
+        this.setItem('openid', value, type.string)
+        this.emit('openid')
     }
 
-    private s_music = true
+    private _music = true
     /** 音乐 */
-    get music() {
-        return this.s_music
-    }
-    set music(music: boolean) {
-        if (this.s_music == music) {
-            return
-        }
-        this.s_music = music
-        this.setItem('music', music)
+    get music() { return this._music }
+    set music(value: boolean) {
+        this._music = value
+        this.setItem('music', value, type.boolean)
         this.emit('music')
-        cc.audioEngine.setMusicVolume(music ? 1 : 0)
+        cc.audioEngine.setMusicVolume(value ? 1 : 0)
     }
 
-    private s_effect = true
+    private _effect = true
     /** 音效 */
-    get effect() {
-        return this.s_effect
-    }
-    set effect(effect: boolean) {
-        if (this.s_effect == effect) {
-            return
-        }
-        this.s_effect = effect
-        this.setItem('effect', effect)
+    get effect() { return this._effect }
+    set effect(value: boolean) {
+        this._effect = value
+        this.setItem('effect', value, type.boolean)
         this.emit('effect')
-        cc.audioEngine.setEffectsVolume(effect ? 1 : 0)
+        cc.audioEngine.setEffectsVolume(value ? 1 : 0)
     }
 }
