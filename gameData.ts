@@ -17,6 +17,9 @@ interface typeValue {
     value: number | string | boolean | object
 }
 
+/**
+ * 继承使用
+ */
 @ccclass
 export class IGameData extends cc.Component {
 
