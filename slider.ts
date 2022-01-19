@@ -5,10 +5,10 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import gameData from "./gameData";
-import switchText from "./switchText";
+import { gamedata } from "./IGameData"
+import switchText from "./switchText"
 
-const { ccclass, property } = cc._decorator;
+const { ccclass, property } = cc._decorator
 
 @ccclass
 export default class NewClass extends cc.Component {
@@ -25,16 +25,13 @@ export default class NewClass extends cc.Component {
     @property
     par = ''
 
-    gamedata: gameData
-
     onEnable() {
         let node = this.node
         node.on(cc.Node.EventType.TOUCH_MOVE, this.ontouchmove, this)
         node.on(cc.Node.EventType.TOUCH_END, this.ontouchend, this)
         node.on(cc.Node.EventType.TOUCH_CANCEL, this.ontouchend, this)
 
-        this.gamedata = cc.Canvas.instance.getComponent(gameData)
-        let ison = this.gamedata[this.par]
+        let ison = gamedata[this.par]
         if (ison) {
             node.x = this.onx
             this.text.index = 1
@@ -66,10 +63,10 @@ export default class NewClass extends cc.Component {
     ontouchend(e: cc.Event.EventTouch) {
         if (this.node.x > 0) {
             this.node.x = this.onx
-            this.gamedata[this.par] = true
+            gamedata[this.par] = true
         } else {
             this.node.x = this.offx
-            this.gamedata[this.par] = false
+            gamedata[this.par] = false
         }
     }
 }
