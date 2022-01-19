@@ -5,22 +5,27 @@ export interface Context {
     state: State<Context>
 }
 
-export function changeState(context: Context, cls: { new(): State<Context> }, pars?: any) {
+/**
+ * 改变状态
+ * @param context 状态上下文
+ * @param cls 新的状态类
+ * @param call 设置新状态的属性
+ */
+export function changeState<T extends State<Context>>(context: Context, cls: { new(): T }, call?: (state: T) => void) {
     if (context.state) {
         context.state.onExit()
     }
 
-    context.state = new cls()
-
-    if (context.state) {
-        context.state.context = context
-        if (pars) {
-            for (const key in pars) {
-                const par = pars[key]
-                context.state[key] = par
-            }
+    let newState = new cls()
+    if (newState) {
+        context.state = newState
+        newState.context = context
+        if (call) {
+            call(newState)
         }
         context.state.onEnter()
+    } else {
+        context.state = null
     }
 }
 

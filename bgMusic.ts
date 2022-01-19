@@ -13,7 +13,9 @@ export default class bgMusic extends cc.Component {
     @property(cc.AudioClip)
     music: cc.AudioClip = null
 
+    audioID: number
+
     onEnable() {
-        cc.audioEngine.playMusic(this.music, true)
+        this.audioID = cc.audioEngine.playMusic(this.music, true)
     }
 }
