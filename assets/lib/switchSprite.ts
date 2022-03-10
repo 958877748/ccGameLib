@@ -5,9 +5,10 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-const { ccclass, property, menu, help } = cc._decorator;
+const { ccclass, property, menu, help, requireComponent } = cc._decorator;
 
 @ccclass
+@requireComponent(cc.Sprite)
 @menu('switch/sprite')
 @help("http://www.baidu.com")
 export default class switchSprite extends cc.Component {
@@ -23,11 +24,6 @@ export default class switchSprite extends cc.Component {
     }
 
     resetInEditor() {
-        let sprite = this.getComponent(cc.Sprite)
-        if (sprite) {
-            this.sprite = sprite
-        } else {
-            this.sprite = this.addComponent(cc.Sprite)
-        }
+        this.sprite = this.getComponent(cc.Sprite)
     }
 }
