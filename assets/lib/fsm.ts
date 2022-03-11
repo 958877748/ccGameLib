@@ -1,3 +1,7 @@
+@cc._decorator.ccclass
+export default class fsm extends cc.Component {
+    //必须写一个组件 才能拖到节点  才能导出 导入
+}
 /**
  * 状态上下文
  */
