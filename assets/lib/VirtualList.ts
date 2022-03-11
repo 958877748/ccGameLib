@@ -77,9 +77,10 @@ export default class VirtualList<T> extends cc.Component {
         //根据数据的长度 创建缺少的虚拟子节点
         for (; index < datas.length; index++) {
             let item = children[index]
-            if (item == null) {
-                let data = datas[index]
+            let data = datas[index]
 
+            if (item == null) {
+                //没有对应的节点
                 //创建一个
                 item = new cc.Node()
                 //大小同真实节点
@@ -91,6 +92,10 @@ export default class VirtualList<T> extends cc.Component {
 
                 //加入容器中
                 this.content.addChild(item)
+            } else {
+                //有对应的节点 拿到组件 刷新显示
+                let virtualItem: VirtualItem<T> = item.addComponent(VirtualItem)
+                virtualItem.refresh(data)
             }
         }
 

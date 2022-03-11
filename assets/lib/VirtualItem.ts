@@ -13,6 +13,7 @@ const { ccclass, menu } = cc._decorator
 @menu('List/VirtualItem')
 export default class VirtualItem<T> extends cc.Component {
 
+
     /**
      * 所属列表
      */
@@ -132,6 +133,18 @@ export default class VirtualItem<T> extends cc.Component {
             } else {
                 this.setActive(true)
             }
+        }
+    }
+
+    /**
+    * 刷新面板的显示
+    */
+    refresh(data: T) {
+        this.data = data
+        if (this.nodeActive) {
+            let node = this.node.children[0]
+            //设置真实节点的数据
+            this.virtualList.onSet(node, this.data, this.index)
         }
     }
 }
