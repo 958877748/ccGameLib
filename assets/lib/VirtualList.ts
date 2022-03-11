@@ -1,235 +1,123 @@
-import Item from "./Item";
-import { scheduleOnce } from "./Util";
+import VirtualItem from "./VirtualItem"
 
-const { ccclass, property, menu } = cc._decorator;
+const { ccclass, property, menu } = cc._decorator
 
+/**
+ * 虚拟列表 只显示能看见的 
+ * 看不见的用空节点代替
+ * item-代表虚拟子节点
+ * node-代表真实子节点
+ */
 @ccclass
-@menu('列表/List')
-export default class List<T> extends cc.Component {
-    private static pool = new cc.NodePool()
-
+@menu('List/VirtualList')
+export default class VirtualList<T> extends cc.Component {
+    /**
+     * 真实节点预制体
+     */
     @property(cc.Node)
-    item: cc.Node = null
+    nodePrefab: cc.Node = null
 
-    content: cc.Node
+    /** 
+     * 容器-包含所有列表项的父节点
+     */
+    content: cc.Node = null
 
-    scrollView: cc.ScrollView
+    /**
+     * 容器上的排序子节点的组件
+     */
+    layout: cc.Layout = null
 
-    handle: {
-        pool: cc.NodePool
-        the: any,
-        fun: (node: cc.Node, data: T, index: number) => void
-    }
+    /**
+     * 滑动区域组件 
+     */
+    @property(cc.ScrollView)
+    ScrollView: cc.ScrollView = null
 
-    private _datas: Array<T>
-    public get datas(): Array<T> {
-        return this._datas
-    }
-    public set datas(value: Array<T>) {
-        this._datas = value
-        let index = 0
-        let children = this.content.children
-        for (; index < children.length; index++) {
-            let data = this._datas[index]
-            let node = children[index]
-            let item = node.getComponent(Item)
-            if (data) {
-                item.data = data
-                item.index = index
-                item.refresh()
-            } else {
-                let node0 = node.children[0]
-                this.returnNode(node0)
-                node.parent = null
-                List.pool.put(node)
-                index--
-            }
-        }
-        for (; index < this._datas.length; index++) {
-
-            let data = this._datas[index]
-
-            //空item对象
-            let item = List.pool.get()
-            if (item == null) {
-                item = new cc.Node()
-                item.addComponent(Item)
-            }
-            item.name = `${index}`
-            item.x = 0
-            item.y = 0
-            item.width = this.item.width
-            item.height = this.item.height
-            item.getComponent(Item).setdata(this, index, data)
-
-            this.content.addChild(item)
-        }
-        // this.content.emit(cc.Node.EventType.POSITION_CHANGED)
-    }
-
-    /** 获取一个实际显示的节点 */
-    getNode() {
-        let node = this.handle.pool.get()
-        if (node == null) {
-            node = cc.instantiate(this.item)
-            node.x = 0
-            node.y = 0
-            node.active = true
-        }
-        return node
-    }
-
-    /** 返还一个实际显示的节点 */
-    returnNode(node: cc.Node) {
-        if (node == null) return
-        node.parent = null
-        scheduleOnce(() => {
-            this.handle.pool.put(node)
-        })
-    }
-
-    /** 设置node的显示 */
-    setNode(item: Item, node: cc.Node) {
-        this.handle.fun.call(this.handle.the, node, item.data, item.index)
-    }
+    /** 
+     * 设置一个列表项的数据
+     * @param node 真实的列表项节点
+     * @param data 一条数据
+     * @param index 下标
+     */
+    onSet: (node: cc.Node, data: T, index: number) => void
 
     onEnable() {
-        this.scrollView = this.getComponent(cc.ScrollView)
-        this.content = this.scrollView.content
+        this.content = this.ScrollView.content
+        this.layout = this.content.getComponent(cc.Layout)
         if (this.content == null) {
             throw Error('没有设置 sorcllView 的 content')
         } else {
-            if (this.scrollView.vertical) {
+            if (this.ScrollView.vertical) {
                 this.content.anchorY = 1
             }
         }
     }
 
-    returnPool() {
-        this.scrollView.stopAutoScroll()
-        let items = this.content.children.slice()
-        for (let index = 0; index < items.length; index++) {
-            let item = items[index]
-            let node = item.children[0]
-            this.returnNode(node)
-            item.parent = null
-            List.pool.put(item)
-        }
-    }
-
-    onDisable() {
-        this.returnPool()
-    }
-}
-
-
-
-
-
-
-
-import List from "./List"
-
-const { ccclass, property, menu } = cc._decorator
-
-@ccclass
-@menu('列表/Item')
-export default class Item extends cc.Component {
-
-    list: List<any>
-    index: number
-    data: any
     /**
-     * 
-     * @param list 
-     * @param index 
-     * @param data 
+     * 列表数据
      */
-    setdata(list: List<any>, index: number, data: any) {
-        this.list = list
-        this.index = index
-        this.data = data
-        this.item_active = false
-        //水平滚动还是垂直滚动
-        if (this.list.scrollView.vertical) {
-            //垂直滚动
-            this.checkOut = this.checkOutY
-        } else {
-            this.checkOut = this.checkOutX
-        }
+    private _datas: Array<T> = null
+
+    public get datas(): Array<T> {
+        return this._datas
     }
+    /**
+     * 设置列表显示的数据
+     * @param datas 数据列表
+     */
+    public set datas(datas: Array<T>) {
+        this._datas = datas
 
-    onEnable() {
-        this.list.content.on(cc.Node.EventType.POSITION_CHANGED, this.checkOut, this)
-        this.node.on(cc.Node.EventType.POSITION_CHANGED, this.checkOut, this)
-    }
+        //立即停止自动滚动
+        this.ScrollView.stopAutoScroll()
 
-    checkOut() {
-        console.log('checkOut')
-    }
+        let index = 0
+        let children = this.content.children
 
-    item_active: boolean
+        //根据数据的长度 创建缺少的虚拟子节点
+        for (; index < datas.length; index++) {
+            let item = children[index]
+            let data = datas[index]
 
-    setActive(active: boolean) {
-        if (this.item_active != active) {
-            this.item_active = active
-            if (active) {
-                let node = this.list.getNode()
-                this.list.setNode(this, node)
-                this.node.addChild(node)
+            if (item == null) {
+                //没有对应的节点
+                //创建一个
+                item = new cc.Node()
+                //大小同真实节点
+                item.width = this.nodePrefab.width
+                item.height = this.nodePrefab.height
+                //加上组件 以便控制
+                let virtualItem: VirtualItem<T> = item.addComponent(VirtualItem)
+                virtualItem.init(this, index, data)
+
+                //加入容器中
+                this.content.addChild(item)
             } else {
-                let node = this.node.children[0]
-                this.list.returnNode(node)
+                //有对应的节点 拿到组件 刷新显示
+                let virtualItem: VirtualItem<T> = item.addComponent(VirtualItem)
+                virtualItem.refresh(data)
             }
         }
-    }
 
-    checkOutX() {
-        let list最右边x = this.list.node.width / 2
-        let item最左边x = this.node.x + this.node.parent.x - this.node.width / 2
-        if (item最左边x > list最右边x) {
-            //不显示
-            this.setActive(false)
-        } else {
-            let list最左边x = -list最右边x
-            let item最右边x = item最左边x + this.node.width
-            if (item最右边x < list最左边x) {
-                this.setActive(false)
-            } else {
-                this.setActive(true)
-            }
+        //根据虚拟子节点列表的长度 删除或回收多余的虚拟子节点
+        for (; index < children.length; index++) {
+            let item = children[index]
+            //直接销毁
+            item.destroy()
         }
+
+        //Layout需要重新对齐排序
+        this.layout.updateLayout()
     }
 
-    checkOutY() {
-        let list最上边Y = this.list.node.height / 2
-        let item最下边y = this.node.y + this.node.parent.y - this.node.height / 2
-        if (item最下边y > list最上边Y) {
-            //不显示
-            this.setActive(false)
-        } else {
-            let list最下边Y = -list最上边Y
-            let item最上边y = item最下边y + this.node.height
-            if (item最上边y < list最下边Y) {
-                this.setActive(false)
-            } else {
-                this.setActive(true)
-            }
-        }
-    }
-
-    onDisable() {
-        this.list.content.off(cc.Node.EventType.POSITION_CHANGED, this.checkOut, this)
-        this.node.off(cc.Node.EventType.POSITION_CHANGED, this.checkOut, this)
-        let node = this.node.children[0]
-        if (node)
-            this.list.returnNode(node)
-    }
-
-    refresh() {
-        if (this.item_active) {
-            let node = this.node.children[0]
-            this.list.setNode(this, node)
-        }
+    /** 
+     * 获取一个真实显示的节点
+     */
+    getNode() {
+        let node = cc.instantiate(this.nodePrefab)
+        node.x = 0
+        node.y = 0
+        node.active = true
+        return node
     }
 }
