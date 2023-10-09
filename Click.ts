@@ -2,7 +2,7 @@ const { ccclass, property, menu } = cc._decorator
 
 @ccclass
 @menu('view/click')
-export default class click extends cc.Component {
+export default class Click extends cc.Component {
 
     @property(cc.Node)
     view: cc.Node = null
