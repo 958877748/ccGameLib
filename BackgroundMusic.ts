@@ -11,7 +11,7 @@ const { ccclass, property } = cc._decorator;
  * 启用时播放背景音乐
  */
 @ccclass
-export default class bgMusic extends cc.Component {
+export default class BackgroundMusic extends cc.Component {
 
     @property(cc.AudioClip)
     music: cc.AudioClip = null
