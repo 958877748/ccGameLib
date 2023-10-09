@@ -3,7 +3,7 @@ import Prefabs from "./Prefabs"
 const { ccclass, property } = cc._decorator
 
 @ccclass
-export default class view extends cc.Component {
+export default class View extends cc.Component {
     static nodes: { [x: string]: cc.Node } = {}
     res: string
     zIndex: number
