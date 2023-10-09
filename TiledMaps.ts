@@ -8,7 +8,7 @@
 const {ccclass, property} = cc._decorator;
 
 @ccclass
-export default class tiledMaps extends cc.Component {
+export default class TiledMaps extends cc.Component {
 
     @property([cc.TiledMapAsset])
     array: Array<cc.TiledMapAsset> = []
