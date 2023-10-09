@@ -1,4 +1,4 @@
-import prefabs from "./prefabs"
+import Prefabs from "./Prefabs"
 
 const { ccclass, property } = cc._decorator
 
@@ -13,7 +13,7 @@ export default class view extends cc.Component {
             nodes = view.nodes,
             node = nodes[res]
         if (!node) {
-            let prefab = cc.Canvas.instance.getComponent(prefabs).get(res)
+            let prefab = cc.Canvas.instance.getComponent(Prefabs).get(res)
             node = cc.instantiate(prefab)
             node.parent = this.node
             nodes[res] = node
