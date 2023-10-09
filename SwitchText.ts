@@ -1,16 +1,9 @@
-// Learn TypeScript:
-//  - https://docs.cocos.com/creator/manual/en/scripting/typescript.html
-// Learn Attribute:
-//  - https://docs.cocos.com/creator/manual/en/scripting/reference/attributes.html
-// Learn life-cycle callbacks:
-//  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
-
 const { ccclass, property, menu, help } = cc._decorator;
 
 @ccclass
-@menu('switch/text')
+@menu('Lib/SwitchText')
 @help("http://www.baidu.com")
-export default class switchText extends cc.Component {
+export default class SwitchText extends cc.Component {
 
     @property(cc.Label)
     label: cc.Label = null
