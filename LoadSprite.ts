@@ -1,8 +1,8 @@
 const { ccclass, property, menu } = cc._decorator
 
 @ccclass
-@menu('面板/loadSprite')
-export default class loadSprite extends cc.Component {
+@menu('Lib/LoadSprite')
+export default class LoadSprite extends cc.Component {
     @property(cc.Sprite)
     sprite: cc.Sprite = null
     /**
