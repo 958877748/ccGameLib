@@ -1,20 +1,13 @@
-// Learn TypeScript:
-//  - https://docs.cocos.com/creator/manual/en/scripting/typescript.html
-// Learn Attribute:
-//  - https://docs.cocos.com/creator/manual/en/scripting/reference/attributes.html
-// Learn life-cycle callbacks:
-//  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
-
 import { gamedata } from "./IGameData"
-import switchText from "./switchText"
+import SwitchText from "./SwitchText"
 
 const { ccclass, property } = cc._decorator
 
 @ccclass
-export default class NewClass extends cc.Component {
+export default class SliderBar extends cc.Component {
 
-    @property(switchText)
-    text: switchText = null
+    @property(SwitchText)
+    text: SwitchText = null
 
     @property
     offx = 0
