@@ -9,7 +9,7 @@ interface item<T> extends cc.Component {
  * 使用 set 函数来设置显示的列表数据
  */
 @ccclass
-export default class showList extends cc.Component {
+export default class ShowList extends cc.Component {
     /**
      * 设置列表数据
      */
