@@ -1,17 +1,10 @@
-// Learn TypeScript:
-//  - https://docs.cocos.com/creator/manual/en/scripting/typescript.html
-// Learn Attribute:
-//  - https://docs.cocos.com/creator/manual/en/scripting/reference/attributes.html
-// Learn life-cycle callbacks:
-//  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
-
 const { ccclass, property, menu, help, requireComponent } = cc._decorator;
 
 @ccclass
 @requireComponent(cc.Sprite)
-@menu('switch/sprite')
+@menu('Lib/SwitchSprite')
 @help("http://www.baidu.com")
-export default class switchSprite extends cc.Component {
+export default class SwitchSprite extends cc.Component {
 
     @property(cc.Sprite)
     sprite: cc.Sprite = null
