@@ -1,9 +1,20 @@
-const { ccclass, property } = cc._decorator
+//子类继承写法示例
 
-/**
- * 玩家存储的数据
- */
-export var gamedata: IGameData = null
+// 全局使用
+// export var gamedata: GameData = null
+
+// @ccclass
+// export default class GameData extends IGameData {
+//     protected getInstance() {
+//         return gamedata
+//     }
+//     protected setInstance(data: GameData) {
+//         gamedata = data
+//     }
+//     自定义属性
+// }
+
+const { ccclass, property } = cc._decorator
 
 enum type {
     number = 0,
@@ -18,10 +29,22 @@ interface typeValue {
 }
 
 /**
- * 继承使用
+ * 继承使用,子类实现getInstance/setInstance方法
+ * 这个单例保存在子类那边
  */
 @ccclass
-export class IGameData extends cc.Component {
+export default class IGameData extends cc.Component {
+
+    protected static get Type() {
+        return type
+    }
+
+    protected getInstance(): IGameData {
+        throw new Error("Method not implemented.")
+    }
+    protected setInstance(data: IGameData): void {
+        throw new Error("Method not implemented.")
+    }
 
     @property({ tooltip: '测试时生效' })
     private clearData = true
@@ -33,10 +56,10 @@ export class IGameData extends cc.Component {
 
     onLoad() {
         this.localStorage = cc.sys.localStorage
-        if (gamedata) {
+        if (this.getInstance()) {
             cc.error('不能同时存在2个GameData组件')
         }
-        gamedata = this
+        this.setInstance(this)
         //初始化所有数据
         if (CC_DEBUG && this.clearData) {
             //测试时清除数据
