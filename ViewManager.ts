@@ -17,9 +17,10 @@ export default class ViewManager extends cc.Component {
         this.add(this.prefab)
     }
 
-    add(prefab: cc.Prefab) {
+    add<T extends View>(prefab: cc.Prefab, set?: (view: T) => void) {
         let node = cc.instantiate(prefab)
         let view = node.getComponent(View)
+        if (set) set(view as T)
         view.manager = this
         this.array.push(view)
         this.node.addChild(node)
