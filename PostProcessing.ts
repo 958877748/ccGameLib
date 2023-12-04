@@ -17,6 +17,10 @@ export default class PostProcessing extends cc.Component {
     @property(cc.Camera)
     camera: cc.Camera = null
 
+    @property(cc.Material)
+    blurMaterial: cc.Material = null
+    originMaterial: cc.Material = null
+
     sprite: cc.Sprite = null
     renderTexture: cc.RenderTexture
     spriteFrame: cc.SpriteFrame
@@ -33,6 +37,17 @@ export default class PostProcessing extends cc.Component {
 
         this.renderTexture.addRef()
         this.spriteFrame.addRef()
+
+        this.scheduleOnce(() => {
+            this.showBlur()
+        }, 5)
+    }
+
+    showBlur() {
+        this.originMaterial = this.sprite.getMaterial(0)
+        let { width, height } = cc.Canvas.instance.node
+        this.blurMaterial.setProperty('size', [width / 3, height / 3])
+        this.sprite.setMaterial(0, this.blurMaterial)
     }
 
     onDestroy() {
