@@ -26,19 +26,25 @@ const { ccclass, property } = cc._decorator
 export default class HitBox extends cc.Component {
 
     private list: Array<cc.PhysicsCollider> = []
-    
+
     onBeginContact(contact: any, self: any, other: cc.PhysicsCollider) {
         this.list.push(other)
     }
 
     onEndContact(contact: any, self: any, other: cc.PhysicsCollider) {
         let index = this.list.indexOf(other)
-        if (index >- 1) {
+        if (index > - 1) {
             this.list.splice(index, 1)
         }
     }
 
-    protected onDisable(): void {
+    lateUpdate() {
+        if (this.list.length === 0) {
+            return
+        }
+        for (let i = 0; i < this.list.length; i++) {
+            this.node.emit('Hit', this.list[i])
+        }
         this.list.length = 0
     }
 }

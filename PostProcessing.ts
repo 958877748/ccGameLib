@@ -38,9 +38,9 @@ export default class PostProcessing extends cc.Component {
         this.renderTexture.addRef()
         this.spriteFrame.addRef()
 
-        this.scheduleOnce(() => {
-            this.showBlur()
-        }, 5)
+        // this.scheduleOnce(() => {
+        //     this.showBlur()
+        // }, 5)
     }
 
     showBlur() {
