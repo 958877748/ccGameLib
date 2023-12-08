@@ -31,20 +31,11 @@ export default class HitBox extends cc.Component {
         this.list.push(other)
     }
 
-    onEndContact(contact: any, self: any, other: cc.PhysicsCollider) {
-        let index = this.list.indexOf(other)
-        if (index > - 1) {
-            this.list.splice(index, 1)
-        }
-    }
-
     lateUpdate() {
         if (this.list.length === 0) {
             return
         }
-        for (let i = 0; i < this.list.length; i++) {
-            this.node.emit('Hit', this.list[i])
-        }
+        this.node.emit('Hit', this.list)
         this.list.length = 0
     }
 }

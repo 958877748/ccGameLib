@@ -3,15 +3,13 @@ const { ccclass, property } = cc._decorator
 @ccclass
 export default class PhysicsSystem extends cc.Component {
 
-    static Inst: cc.PhysicsManager
-
-    @property({ tooltip: 'group影响debug绘制位置' })
+    @property({ tooltip: '当前节点的group影响debug绘制位置' })
     debug = false
 
     @property(cc.Vec2)
     gravity = cc.v2()
 
-    protected onEnable(): void {
+    onEnable() {
 
         //开启物理系统
         //物理系统默认是关闭的，如果需要使用物理系统
@@ -19,7 +17,6 @@ export default class PhysicsSystem extends cc.Component {
         //否则你在编辑器里做的所有物理编辑都不会产生任何效果。
         let sys = cc.director.getPhysicsManager()
         sys.enabled = true
-        PhysicsSystem.Inst = sys
 
         //绘制物理调试信息
         //物理系统默认是不绘制任何调试信息的
