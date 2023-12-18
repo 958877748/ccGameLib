@@ -1,8 +1,9 @@
 import View from "./View"
 
-const { ccclass, property } = cc._decorator
+const { ccclass, property, requireComponent } = cc._decorator
 
 @ccclass
+@requireComponent(cc.Widget)
 export default class ViewManager extends cc.Component {
 
     @property({
@@ -12,17 +13,14 @@ export default class ViewManager extends cc.Component {
     private prefab: cc.Prefab = null
 
     private array: View[] = []
-    
+
     protected start(): void {
         this.add(this.prefab)
     }
 
-    add<T extends View>(prefab: cc.Prefab, set?: (view: T) => void) {
+    add(prefab: cc.Prefab, set?: (node: cc.Node) => void) {
         let node = cc.instantiate(prefab)
-        let view = node.getComponent(View)
-        if (set) set(view as T)
-        view.manager = this
-        this.array.push(view)
+        if (set) set(node)
         this.node.addChild(node)
     }
 
@@ -33,5 +31,17 @@ export default class ViewManager extends cc.Component {
         }
         this.array.splice(index, 1)
         view.node.active = false
+    }
+
+    protected resetInEditor(): void {
+        let widget = this.getComponent(cc.Widget)
+        widget.isAlignTop = true
+        widget.isAlignBottom = true
+        widget.isAlignLeft = true
+        widget.isAlignRight = true
+        widget.top = 0
+        widget.bottom = 0
+        widget.left = 0
+        widget.right = 0
     }
 }
