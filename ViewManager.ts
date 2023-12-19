@@ -18,6 +18,19 @@ export default class ViewManager extends cc.Component {
         this.add(this.prefab)
     }
 
+    addOnLoad(name: string) {
+        let path = `view/${name}`
+        let prefab = cc.assetManager.resources.get(path, cc.Prefab)
+        if (prefab) {
+            this.add(prefab)
+        } else {
+            cc.assetManager.resources.load(path, cc.Prefab, (err, res) => {
+                if (err) cc.error(err)
+                this.add(res)
+            })
+        }
+    }
+
     add(prefab: cc.Prefab, set?: (node: cc.Node) => void) {
         let node = cc.instantiate(prefab)
         if (set) set(node)
