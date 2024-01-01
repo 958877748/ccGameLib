@@ -12,4 +12,7 @@ export default class AreaColliderTest extends cc.Component {
       this.list.splice(index, 1)
     }
   }
+  onDisable() {
+    this.list.length = 0
+  }
 }
