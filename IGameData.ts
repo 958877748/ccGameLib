@@ -1,19 +1,3 @@
-//子类继承写法示例
-
-// 全局使用
-// export var gamedata: GameData = null
-
-// @ccclass
-// export default class GameData extends IGameData {
-//     protected getInstance() {
-//         return gamedata
-//     }
-//     protected setInstance(data: GameData) {
-//         gamedata = data
-//     }
-//     自定义属性
-// }
-
 const { ccclass, property } = cc._decorator
 
 enum type {
@@ -29,8 +13,7 @@ interface typeValue {
 }
 
 /**
- * 继承使用,子类实现getInstance/setInstance方法
- * 这个单例保存在子类那边
+ * 子类继承使用
  */
 @ccclass
 export default class IGameData extends cc.Component {
@@ -38,13 +21,7 @@ export default class IGameData extends cc.Component {
     protected static get Type() {
         return type
     }
-
-    protected getInstance(): IGameData {
-        throw new Error("Method not implemented.")
-    }
-    protected setInstance(data: IGameData): void {
-        throw new Error("Method not implemented.")
-    }
+    private static has = false
 
     @property({ tooltip: '测试时生效' })
     private clearData = true
@@ -55,11 +32,14 @@ export default class IGameData extends cc.Component {
     private localStorage: Storage = null
 
     onLoad() {
-        this.localStorage = cc.sys.localStorage
-        if (this.getInstance()) {
+        if (IGameData.has) {
             cc.error('不能同时存在2个GameData组件')
+            this.destroy()
+            return
+        } else {
+            IGameData.has = true
         }
-        this.setInstance(this)
+        this.localStorage = cc.sys.localStorage
         //初始化所有数据
         if (CC_DEBUG && this.clearData) {
             //测试时清除数据
@@ -82,6 +62,14 @@ export default class IGameData extends cc.Component {
         //同步音乐音效
         cc.audioEngine.setMusicVolume(this.music ? 1 : 0)
         cc.audioEngine.setEffectsVolume(this.effect ? 1 : 0)
+    }
+
+    protected onDestroy(): void {
+        if (IGameData.has) {
+            IGameData.has = false
+        } else {
+            cc.error('IGameData.has = false error')
+        }
     }
 
     /**

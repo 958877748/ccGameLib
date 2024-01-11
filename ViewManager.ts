@@ -15,7 +15,7 @@ export default class ViewManager extends cc.Component {
     private array: View[] = []
 
     protected start(): void {
-        this.add(this.prefab)
+        if (this.prefab) this.add(this.prefab)
     }
 
     addOnLoad(name: string, yes?: () => void) {
